@@ -8,7 +8,7 @@ public class TextBasedAdventure : MonoBehaviour
         public string Name;
         public TileType Type;
         public string Description;
-        public bool Visited;
+        public bool WasVisited;
     }
 
     public enum TileType
@@ -84,8 +84,8 @@ public class TextBasedAdventure : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        bool keyPressed = HandleInput(out int newRow, out int newColumn);
-        if (!keyPressed)
+        bool wasKeyPressed = HandleInput(out int newRow, out int newColumn);
+        if (!wasKeyPressed)
         {
             return;
         }
@@ -94,6 +94,9 @@ public class TextBasedAdventure : MonoBehaviour
         OutputTileInformation();
     }
 
+    /// <summary>
+    /// player has entered a tile where there is an enemy. this should happen every time the player enters the tile
+    /// </summary>
     private void EncounterEnemy()
     {
         PlayerTakeDamage(enemyDamage);
@@ -110,11 +113,18 @@ public class TextBasedAdventure : MonoBehaviour
         }
     }
 
-    private void ItemPickup()
+    /// <summary>
+    /// player has entered a tile where there is an item. this should happen once, the first time we visit the tile
+    /// </summary>
+    private void PickupItem()
     {
         PlayerHeal(itemHealAmount);
     }
 
+    /// <summary>
+    /// there is no max health, so this will add health to the player no matter what.
+    /// </summary>
+    /// <param name="healAmount"></param>
     private void PlayerHeal(int healAmount)
     {
         playerHealth += healAmount;
@@ -138,14 +148,14 @@ public class TextBasedAdventure : MonoBehaviour
                 EncounterEnemy();
                 break;
             case TileType.Item:
-                if (dungeon[playerRow, playerColumn].Visited)
+                if (dungeon[playerRow, playerColumn].WasVisited)
                 {
                     Debug.Log("You have already collected the item that was here.");
                 } 
                 else
                 {
                     Debug.Log("You see a shiny object");
-                    ItemPickup();
+                    PickupItem();
                 }
                 break;
             case TileType.Exit:
@@ -156,13 +166,18 @@ public class TextBasedAdventure : MonoBehaviour
                 break;
         }
 
-        if (!dungeon[playerRow, playerColumn].Visited)
+        if (!dungeon[playerRow, playerColumn].WasVisited)
         {
             Look();
-            dungeon[playerRow, playerColumn].Visited = true;
+            dungeon[playerRow, playerColumn].WasVisited = true;
         }
     }
 
+    /// <summary>
+    /// set's a player's grid position in our 2d dungeon, making sure the new position is within the correct bounds
+    /// </summary>
+    /// <param name="newRow"></param>
+    /// <param name="newColumn"></param>
     private void SetPlayerPosition(int newRow, int newColumn)
     {
         if (IsInBounds(newRow, newColumn))
@@ -177,7 +192,7 @@ public class TextBasedAdventure : MonoBehaviour
     }
 
     /// <summary>
-    /// is this tile in bounds of our 2d dungeon array?
+    /// is this tile in bounds of our 2d dungeon grid?
     /// </summary>
     /// <param name="newRow">attempted row position</param>
     /// <param name="newColumn">attempted column position</param>
@@ -227,7 +242,9 @@ public class TextBasedAdventure : MonoBehaviour
         return hasPressedKey;
     }
 
-
+    /// <summary>
+    /// output the long-form description 
+    /// </summary>
     private void Look()
     {
         Debug.Log(dungeon[playerRow, playerColumn].Description);
