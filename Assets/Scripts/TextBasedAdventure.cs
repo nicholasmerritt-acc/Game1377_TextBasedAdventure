@@ -11,15 +11,6 @@ public class TextBasedAdventure : MonoBehaviour
         public bool Visited;
     }
 
-    //dont need to do this if we don't want to see in inspector
-    //public struct RoomRow
-    //{
-    //    public Room[] rooms;
-    //}
-
-    //[Tooltip("Rooms the player can explore")]
-    //public RoomRow[] dungeon;
-
     public enum TileType
     {
         Invalid,
@@ -28,30 +19,6 @@ public class TextBasedAdventure : MonoBehaviour
         Enemy,
         Exit,
     }
-
-    //string[,] tileNames = { { "Dark Cave",      "Mossy Tunnel",     "Crystal Room" },
-    //                        { "Bone Chamber",   "Flooded Hall",     "Iron Gate"    },
-    //                        { "Goblin Den",     "Armory",           "Throne Room"  }
-    //                        };
-
-    //TileType[,] tileTypes = {{ TileType.Empty, TileType.Item,  TileType.Empty},
-    //                         { TileType.Enemy, TileType.Empty, TileType.Exit},
-    //                         { TileType.Empty, TileType.Enemy, TileType.Item}
-    //                        };
-
-    //string[,] tileDescriptions = { { /*dark cave*/      "A mysterious, spooky cave. You hear the chittering of insects and the rattling of bones coming from the depths.", 
-    //                                 /*mossy tunnel*/   "A long, narrow tunnel stretches out before you. There is springy green moss all along the floor. If you were barefoot, this room would be very comfy. Probably best to leave your shoes on, though.",
-    //                                 /*crystal room*/   "Pink emanates from this room almost aggressively. There are gemstones lining the walls that glow and pulse with an intense energy."
-    //                               },
-    //                               { /*bone chamber*/   "The chamber is enormous. The stalactites and stalagmites look jagged and bone-like, and one drop of putrid water coming from the ceiling hits you in the eye. Ew.",
-    //                                 /*flooded hall*/   "Deep pools of water fill this once-marvelous hall. Ragged banners and rusty shields hang awkwardly on the walls.",
-    //                                 /*iron gate*/      "There is an imposing steel gate up ahead that is slightly ajar. It looks incredibly heavy, but you might be able to squeeze through the opening."
-    //                               },
-    //                               { /*goblin den*/     "Tattered goblin clothing, scraps of fur, and half-eaten food lay scattered around this room. Looks like the goblins left in a hurry. Better get out of here before they come back.",
-    //                                 /*armory*/         "Racks of well-organized weapons fill this room. Obviously the goblins are preparing for a fight against a powerful force.",           
-    //                                 /*throne room*/    "A large, empty throne looms towards the back of this room. There are several treasure chests flanking it, which must belong to some absent royalty. Better get them quickly and escape before they return."
-    //                               }
-    //                             };
 
     private Room[,] dungeon =
     {
@@ -102,10 +69,8 @@ public class TextBasedAdventure : MonoBehaviour
 
     };
 
-    bool[,] visited;
-
     private int playerRow = 0;
-    private int playerCol = 0;
+    private int playerColumn = 0;
     private int playerHealth = 10;
     private int enemyDamage = 1;
     private int itemHealAmount = 2;
@@ -119,20 +84,15 @@ public class TextBasedAdventure : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        bool keyPressed = HandleInput(out int newRow, out int newCol);
+        bool keyPressed = HandleInput(out int newRow, out int newColumn);
         if (!keyPressed)
         {
             return;
         }
 
-        SetPlayerPosition(newRow, newCol);
+        SetPlayerPosition(newRow, newColumn);
         OutputTileInformation();
     }
-
-    //private void SetupGrid()
-    //{
-    //    visited = new bool[tileTypes.GetLength(0), tileTypes.GetLength(1)];
-    //}
 
     private void EncounterEnemy()
     {
@@ -162,13 +122,13 @@ public class TextBasedAdventure : MonoBehaviour
     }
 
     /// <summary>
-    /// print which tile we are in
+    /// print which tile we are in, as well as long description if we have not visited before
     /// </summary>
     private void OutputTileInformation()
     {
-        Debug.Log("You are in: " + dungeon[playerRow,playerCol].Name);
+        Debug.Log("You are in: " + dungeon[playerRow,playerColumn].Name);
 
-        switch (dungeon[playerRow, playerCol].Type)
+        switch (dungeon[playerRow, playerColumn].Type)
         {
             case TileType.Empty:
                 Debug.Log("There is nothing here.");
@@ -178,8 +138,15 @@ public class TextBasedAdventure : MonoBehaviour
                 EncounterEnemy();
                 break;
             case TileType.Item:
-                Debug.Log("You see a shiny object");
-                ItemPickup();
+                if (dungeon[playerRow, playerColumn].Visited)
+                {
+                    Debug.Log("You have already collected the item that was here.");
+                } 
+                else
+                {
+                    Debug.Log("You see a shiny object");
+                    ItemPickup();
+                }
                 break;
             case TileType.Exit:
                 Debug.Log("You see a way out");
@@ -189,19 +156,19 @@ public class TextBasedAdventure : MonoBehaviour
                 break;
         }
 
-        if (!dungeon[playerRow, playerCol].Visited)
+        if (!dungeon[playerRow, playerColumn].Visited)
         {
             Look();
-            dungeon[playerRow, playerCol].Visited = true;
+            dungeon[playerRow, playerColumn].Visited = true;
         }
     }
 
-    private void SetPlayerPosition(int newRow, int newCol)
+    private void SetPlayerPosition(int newRow, int newColumn)
     {
-        if (IsInBounds(newRow, newCol))
+        if (IsInBounds(newRow, newColumn))
         {
             playerRow = newRow;
-            playerCol = newCol;
+            playerColumn = newColumn;
         }
         else
         {
@@ -212,25 +179,25 @@ public class TextBasedAdventure : MonoBehaviour
     /// <summary>
     /// is this tile in bounds of our 2d dungeon array?
     /// </summary>
-    /// <param name="newRow"></param>
-    /// <param name="newCol"></param>
+    /// <param name="newRow">attempted row position</param>
+    /// <param name="newColumn">attempted column position</param>
     /// <returns></returns>
-    private bool IsInBounds(int newRow, int newCol)
+    private bool IsInBounds(int newRow, int newColumn)
     {
-        return newRow >= 0 && newRow < dungeon.GetLength(0) && newCol >= 0 && newCol < dungeon.GetLength(1);
+        return newRow >= 0 && newRow < dungeon.GetLength(0) && newColumn >= 0 && newColumn < dungeon.GetLength(1);
     }
 
     /// <summary>
     /// Handles player's input and sets potential new position in the filenames array
     /// </summary>
     /// <param name="newRow1">new row position</param>
-    /// <param name="newCol1">new col position</param>
+    /// <param name="newColumn1">new column position</param>
     /// <returns>true if a key (that we care about) was pressed this frame</returns>
-    private bool HandleInput(out int newRow1, out int newCol1)
+    private bool HandleInput(out int newRow1, out int newColumn1)
     {
         bool hasPressedKey = true;
         newRow1 = playerRow;
-        newCol1 = playerCol;
+        newColumn1 = playerColumn;
 
         if (Input.GetKeyDown(KeyCode.S))
         {
@@ -242,11 +209,11 @@ public class TextBasedAdventure : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
-            newCol1++;
+            newColumn1++;
         }
         else if (Input.GetKeyDown(KeyCode.A))
         {
-            newCol1--;
+            newColumn1--;
         }
         else if (Input.GetKeyDown(KeyCode.E))
         {
@@ -263,6 +230,6 @@ public class TextBasedAdventure : MonoBehaviour
 
     private void Look()
     {
-        Debug.Log(dungeon[playerRow, playerCol].Description);
+        Debug.Log(dungeon[playerRow, playerColumn].Description);
     }
 }
