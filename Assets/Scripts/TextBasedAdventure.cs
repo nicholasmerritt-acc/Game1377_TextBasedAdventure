@@ -164,8 +164,16 @@ public class TextBasedAdventure : MonoBehaviour
     void Start()
     {
         VerifyTeleportersMatch();
+        WelcomeMonologue();
         OutputHelp();
         OutputTileInformation();
+    }
+
+    private void WelcomeMonologue()
+    {
+        Debug.Log("A gnome told you long ago of a treasure, guarded by a powerful dragon, on floor 30 of this dungeon.");
+        Debug.Log("You have decided to make your way, slowly but surely, down the 30 floors. Good luck.");
+        Debug.Log("Welcome to the Dungeon.");
     }
 
     /// <summary>
@@ -341,7 +349,7 @@ public class TextBasedAdventure : MonoBehaviour
     }
 
     /// <summary>
-    /// Handles player's input and sets potential new position in the filenames array
+    /// Handles player's input and sets potential new position in the dungeon array
     /// </summary>
     /// <param name="newRow">new row position</param>
     /// <param name="newColumn">new column position</param>
@@ -401,7 +409,6 @@ public class TextBasedAdventure : MonoBehaviour
     /// </summary>
     private void OutputHelp()
     {
-        Debug.Log("Welcome to the Dungeon.");
         Debug.Log("Use WASD or arrow keys to move, E to look around your current room, T to Teleport, and Q to display this help message again.");
         Debug.Log("Onwards, adventurer!");
     }
