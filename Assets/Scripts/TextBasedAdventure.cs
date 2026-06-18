@@ -193,14 +193,32 @@ public class TextBasedAdventure : MonoBehaviour
     private int enemyDamage = 1;
     private int itemHealAmount = 2;
 
+    public bool playerDead = false;
+
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        NewGame();
+    }
+
+    private void NewGame()
+    {
+        dungeon = new();
+        SetupPlayerVariables();
         StartingMonologue();
         SetupNextFloor();
         VerifyTeleportersMatch();
         OutputTileInformation();
+    }
+
+    private void SetupPlayerVariables()
+    {
+        playerDead = false;
+        playerHealth = 10;
+        playerRow = 0;
+        playerColumn = 0;
+        playerFloor = 0;
     }
 
     private void StartingMonologue()
@@ -314,6 +332,16 @@ public class TextBasedAdventure : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (playerDead)
+        {
+            //only respond to new game request
+            if (Input.GetButtonDown("Respawn"))
+            {
+                NewGame();
+            }
+            return;
+        }
+
         bool wasKeyPressed = HandleInput(out int newRow, out int newColumn);
         if (!wasKeyPressed)
         {
@@ -344,7 +372,8 @@ public class TextBasedAdventure : MonoBehaviour
         {
             playerHealth = 0;
             Debug.Log("you are dead!");
-
+            Debug.Log("GAME OVER");
+            Debug.Log("PRESS N FOR NEW GAME");
         }
     }
 
